@@ -1,9 +1,44 @@
 [
-  {"id":"foto-0","title":"Foto da festa","url":"/uploads/foto-0.jpg","originalName":"foto-0.jpg"},
-  {"id":"foto-1","title":"Foto da festa","url":"/uploads/foto-1.jpg","originalName":"foto-1.jpg"},
-  {"id":"foto-2","title":"Foto da festa","url":"/uploads/foto-2.jpg","originalName":"foto-2.jpg"},
-  {"id":"foto-3","title":"Foto da festa","url":"/uploads/foto-3.jpg","originalName":"foto-3.jpg"},
-  {"id":"foto-4","title":"Foto da festa","url":"/uploads/foto-4.jpg","originalName":"foto-4.jpg"},
-  {"id":"foto-5","title":"Foto da festa","url":"/uploads/foto-5.jpg","originalName":"foto-5.jpg"},
-  {"id":"foto-6","title":"Foto da festa","url":"/uploads/foto-6.jpg","originalName":"foto-6.jpg"}
+  {
+    "id": "foto-1",
+    "title": "Foto da festa",
+    "url": "./uploads/foto-0.jpg",
+    "originalName": "foto-0.jpg"
+  },
+  {
+    "id": "foto-2",
+    "title": "Foto da festa",
+    "url": "./uploads/foto-1.jpg",
+    "originalName": "foto-1.jpg"
+  },
+  {
+    "id": "foto-3",
+    "title": "Foto da festa",
+    "url": "./uploads/foto-2.jpg",
+    "originalName": "foto-2.jpg"
+  },
+  {
+    "id": "foto-4",
+    "title": "Foto da festa",
+    "url": "./uploads/foto-3.jpg",
+    "originalName": "foto-3.jpg"
+  },
+  {
+    "id": "foto-5",
+    "title": "Foto da festa",
+    "url": "./uploads/foto-4.jpg",
+    "originalName": "foto-4.jpg"
+  },
+  {
+    "id": "foto-6",
+    "title": "Foto da festa",
+    "url": "./uploads/foto-5.jpg",
+    "originalName": "foto-5.jpg"
+  },
+  {
+    "id": "foto-7",
+    "title": "Foto da festa",
+    "url": "./uploads/foto-6.jpg",
+    "originalName": "foto-6.jpg"
+  }
 ]
