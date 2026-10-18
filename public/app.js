@@ -1,19 +1,16 @@
 const gallery = document.querySelector('#gallery');
 const count = document.querySelector('#photoCount');
-const musicButton = document.querySelector('#musicButton');
 const musicFrame = document.querySelector('#musicFrame');
 const thankYouVideo = document.querySelector('#thankYouVideo');
 const parabensVideo = document.querySelector('#parabensVideo');
 const youtubeId = 'Yb9vPpm9AcI';
 let musicStarted = false;
 let musicPlayer;
-let musicNeedsUserGesture = false;
 
 function startMusic() {
   if (musicStarted || !musicFrame) return;
   musicStarted = true;
   musicFrame.src = `https://www.youtube.com/embed/${youtubeId}?autoplay=1&loop=1&playlist=${youtubeId}&controls=0&enablejsapi=1&origin=${encodeURIComponent(location.origin)}`;
-  if (musicButton) musicButton.textContent = '♫ Música tocando';
   window.onYouTubeIframeAPIReady = () => {
     musicPlayer = new YT.Player('musicFrame', {
       events: {
@@ -21,7 +18,6 @@ function startMusic() {
           event.target.setVolume(100);
           event.target.unMute();
           event.target.playVideo();
-          if (musicNeedsUserGesture) musicNeedsUserGesture = false;
         }
       }
     });
@@ -31,26 +27,24 @@ function startMusic() {
   document.head.appendChild(api);
 }
 
-function openVideoFullscreen(video, hasSoundOnFullscreen = false) {
+function openVideoFullscreen(video) {
   if (!video) return;
   const enter = video.requestFullscreen ? video.requestFullscreen() : video.webkitEnterFullscreen?.();
   const play = video.play();
-  if (enter?.then) {
-    enter.then(() => { if (hasSoundOnFullscreen) video.muted = false; }).catch(() => { if (hasSoundOnFullscreen) video.muted = true; });
-  } else if (!video.webkitEnterFullscreen && hasSoundOnFullscreen) {
-    video.muted = true;
-  }
+  if (enter?.catch) enter.catch(() => {});
   if (play?.catch) play.catch(() => {});
 }
 
 for (const video of [thankYouVideo, parabensVideo]) {
-  video?.addEventListener('click', () => openVideoFullscreen(video, video === parabensVideo));
+  video?.addEventListener('click', () => openVideoFullscreen(video));
+  video?.addEventListener('webkitbeginfullscreen', () => { video.muted = false; });
+  video?.addEventListener('webkitendfullscreen', () => { video.muted = true; });
 }
-parabensVideo?.addEventListener('webkitbeginfullscreen', () => { parabensVideo.muted = false; });
-parabensVideo?.addEventListener('webkitendfullscreen', () => { parabensVideo.muted = true; });
+
 document.addEventListener('fullscreenchange', () => {
-  if (parabensVideo && document.fullscreenElement !== parabensVideo) parabensVideo.muted = true;
-  if (parabensVideo && document.fullscreenElement === parabensVideo) parabensVideo.muted = false;
+  for (const video of [thankYouVideo, parabensVideo]) {
+    if (video) video.muted = document.fullscreenElement !== video;
+  }
 });
 
 const messageSection = document.querySelector('.message');
@@ -71,14 +65,4 @@ if (thankYouVideo) {
 function card(photo){ const el=document.createElement('article'); el.className='photo-card'; el.innerHTML=`<img loading="lazy" src="${photo.url}" alt="Foto da festa da Mirella Rebecca"><a class="download-button" href="${photo.url}" download="mirella-foto.jpg">↓ Salvar fotinha</a>`; return el; }
 async function loadGallery(){ try { let data; try { const response=await fetch('./api/gallery'); if(!response.ok) throw new Error('static'); data=await response.json(); } catch { data={photos:await fetch('./gallery.json').then(response=>response.json())}; } gallery.innerHTML=''; data.photos.forEach(p=>gallery.appendChild(card(p))); count.textContent=`${data.photos.length} ${data.photos.length===1?'fotinha':'fotinhas'}`; if(!data.photos.length) gallery.innerHTML='<p class="photo-count">As fotinhas estão chegando com muito carinho.</p>'; } catch { count.textContent='álbum em preparação'; gallery.innerHTML='<p class="photo-count">Não foi possível carregar o álbum agora.</p>'; } }
 
-musicButton?.addEventListener('click', () => {
-  if (!musicStarted) startMusic();
-  if (musicPlayer) {
-    musicPlayer.setVolume(100);
-    musicPlayer.unMute();
-    musicPlayer.playVideo();
-  } else if (musicStarted) {
-    musicNeedsUserGesture = true;
-  }
-});
 loadGallery();
