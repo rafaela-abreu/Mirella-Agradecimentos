@@ -4,10 +4,15 @@ const musicFrame = document.querySelector('#musicFrame');
 const thankYouVideo = document.querySelector('#thankYouVideo');
 const parabensVideo = document.querySelector('#parabensVideo');
 const bear = document.querySelector('#bearFloat');
-const youtubeId = 'Yb9vPpm9AcI';
+const musicAudio = new Audio('./media/mirella-background-music.mp3');
+musicAudio.volume = 1;
+musicAudio.loop = true;
+musicAudio.preload = 'auto';
 const bearPositionKey = 'mirella-teddy-position-thanks-v1';
 let musicStarted = false;
-let musicPlayer;
+let musicStarting = false;
+let musicNeedsGesture = false;
+let messageVisible = false;
 let musicPausedForDrag = false;
 let dragState = null;
 let bearPosition = null;
@@ -20,23 +25,28 @@ if (bearSound) {
 }
 
 function startMusic() {
-  if (musicStarted || !musicFrame) return;
-  musicStarted = true;
-  musicFrame.src = `https://www.youtube.com/embed/${youtubeId}?autoplay=1&loop=1&playlist=${youtubeId}&controls=0&enablejsapi=1&origin=${encodeURIComponent(location.origin)}`;
-  window.onYouTubeIframeAPIReady = () => {
-    musicPlayer = new YT.Player('musicFrame', {
-      events: {
-        onReady: event => {
-          event.target.setVolume(100);
-          event.target.unMute();
-          event.target.playVideo();
-        }
-      }
+  if (musicStarted || musicStarting) return;
+  musicStarting = true;
+  const playback = musicAudio.play();
+  if (playback && typeof playback.then === 'function') {
+    playback.then(() => {
+      musicStarted = true;
+      musicStarting = false;
+      musicNeedsGesture = false;
+    }).catch(() => {
+      musicStarting = false;
+      musicNeedsGesture = true;
     });
-  };
-  const api = document.createElement('script');
-  api.src = 'https://www.youtube.com/iframe_api';
-  document.head.appendChild(api);
+  } else {
+    musicStarted = true;
+    musicStarting = false;
+  }
+}
+function retryMusicFromGesture() {
+  if (messageVisible && musicNeedsGesture && !musicStarted && !musicStarting) startMusic();
+}
+for (const eventName of ['pointerdown', 'pointerup', 'touchend', 'keydown']) {
+  document.addEventListener(eventName, retryMusicFromGesture, { passive: true });
 }
 
 function openVideoFullscreen(video) {
@@ -62,7 +72,7 @@ document.addEventListener('fullscreenchange', () => {
 const messageSection = document.querySelector('.message');
 if (messageSection && 'IntersectionObserver' in window) {
   new IntersectionObserver(([entry], observer) => {
-    if (entry.isIntersecting) { startMusic(); observer.disconnect(); }
+    if (entry.isIntersecting) { messageVisible = true; startMusic(); observer.disconnect(); }
   }, { threshold: 0.15 }).observe(messageSection);
 }
 
@@ -87,12 +97,8 @@ function setBearPosition(x, y, save = false) {
 function playBearSound() {
   if (!bearSound) return;
   window.clearTimeout(bearSoundTimer);
-  if (musicPlayer) {
-    try {
-      musicPausedForDrag = musicPlayer.getPlayerState() === YT.PlayerState.PLAYING;
-      if (musicPausedForDrag) musicPlayer.pauseVideo();
-    } catch { musicPausedForDrag = false; }
-  }
+  musicPausedForDrag = !musicAudio.paused;
+  if (musicPausedForDrag) musicAudio.pause();
   bearSound.currentTime = 0;
   bearSound.play().catch(() => {});
 }
@@ -101,7 +107,15 @@ function stopBearSound() {
     bearSound.pause();
     bearSound.currentTime = 0;
   }
-  if (musicPausedForDrag && musicPlayer) musicPlayer.playVideo();
+  if (musicPausedForDrag) {
+    const playback = musicAudio.play();
+    if (playback && typeof playback.then === 'function') {
+      playback.then(() => { musicStarted = true; musicNeedsGesture = false; })
+        .catch(() => { musicStarted = false; musicNeedsGesture = true; });
+    } else {
+      musicStarted = true;
+    }
+  }
   musicPausedForDrag = false;
 }
 function finishBearDrag() {
